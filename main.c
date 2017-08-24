@@ -24,11 +24,19 @@
 	if(callback() < 0) \
 		return FALSE
 
+#define GETINT_OPTARG(xtarget) \
+	errno = 0; \
+	xtarget = (int) strtol(optarg,&end,10); \
+   if(errno) { \
+   	perror("unable to get integer (strtol):"); \
+   	return 1; \
+   }
+
 #define UNUSED_PARAM(xparam) \
 	((void)xparam)
 
 #define GUESS_MAX_FD 1024
-#define OPTIONS 4
+#define OPTIONS 5
 #define MASK 0xFFFFE7FCL
 
 typedef struct __opt {
@@ -49,7 +57,8 @@ static kbledctl_opt options[OPTIONS] = {
 	{ "print this help",   "-h" , 0 },
 	{ "change display",    "-d" , 0 },
 	{ "don't daemonize",   "-n" , 0 },
-	{ "change led number", "-l" , 0 }
+	{ "change led number", "-l" , 0 },
+	{ "change used key",   "-k" , 0 }
 };
 
 void cleanupexit()
@@ -93,7 +102,7 @@ kbledctl_bool make_daemon()
 	return TRUE;
 }
 
-void listen_events(const char* display, const int nled) 
+void listen_events(const char* display, const int nled, const key ctl_key) 
 {
 	char target[PATH_MAX];
 	if(get_keyboard_evpath_s(target) != 0)
@@ -101,7 +110,7 @@ void listen_events(const char* display, const int nled)
 
 	d = XOpenDisplay(display);
 	if(d == NULL)
-		exit(2);
+		exit(1);
 	
 	key press;
 	f = fopen(target,"r");
@@ -121,7 +130,7 @@ void listen_events(const char* display, const int nled)
 
 	while(TRUE) {
 		press = wait_for_keypress(f);
-	   if(press == KEY_SCROLLLOCK) {
+	   if(press == ctl_key) {
 	   	XGetKeyboardControl(d,&current_state);
 			ctl.led_mode = !(MASK == (current_state.led_mask & MASK));
 			XChangeKeyboardControl(d,KBLedMode,&ctl);
@@ -132,7 +141,7 @@ void listen_events(const char* display, const int nled)
 
 void print_help_exit(char* execname) 
 {
-	printf("usage: %s [-hn] [-d XDISPLAY] [-l LED_INT]\n",execname);
+	printf("usage: %s [-hn] [-k KEY_INT] [-d XDISPLAY] [-l LED_INT]\n",execname);
 	for(int i=0;i<OPTIONS;i++)
 		printf(" %s : %s\n",options[i].name, options[i].desc);
 	exit(0);
@@ -145,24 +154,24 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	key target_key = KEY_SCROLLLOCK;
 	kbledctl_bool daemonize = TRUE;
 	int target_led = 3;
 	char* target_display_server = NULL;
+
 	char* end = NULL; //used for strtol 
 
 	int current;
-	while((current=getopt(argc,argv,"nhd:l:")) != -1) {
+	while((current=getopt(argc,argv,"nhd:l:k:")) != -1) {
 		switch(current) {
 			case 'n':
 				daemonize = FALSE;
 				break;
 			case 'l':
-            errno = 0;
-            target_led = (int) strtol(optarg,&end,10);
-            if(errno) {
-            	perror("unable to get integer (strtol):");
-            	return 1;
-            }
+				GETINT_OPTARG(target_led);
+				break;
+			case 'k':
+				GETINT_OPTARG(target_key);
 				break;
 			case 'd':
 				target_display_server = optarg;
@@ -182,7 +191,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	listen_events(target_display_server,target_led);
+	listen_events(target_display_server,target_led,target_key);
 
 	return 0;
 }
