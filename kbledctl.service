@@ -1,0 +1,10 @@
+[Unit]
+Description=Service for Keyboard LED control (kbledctl) daemon
+
+[Service]
+User=root
+Type=forking
+ExecStart=/usr/bin/kbledctl -d :0
+
+[Install]
+WantedBy=graphical.target

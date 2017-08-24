@@ -79,7 +79,6 @@ kbledctl_bool make_daemon()
 
 	SPAWN_AND_DIE(newpid);
 	CALL_LZ(setsid);
-	SPAWN_AND_DIE(newpid);
 	
 	VCALL_LZ(chdir,"/");
  
@@ -102,7 +101,7 @@ void listen_events(const char* display, const int nled)
 
 	d = XOpenDisplay(display);
 	if(d == NULL)
-		exit(1);
+		exit(2);
 	
 	key press;
 	f = fopen(target,"r");
