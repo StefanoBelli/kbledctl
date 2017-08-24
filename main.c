@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,7 +34,7 @@
 typedef struct __opt {
 	char desc[17];
 	char name[2];
-	char fill_offset;
+	char fill_zero;
 } kbledctl_opt;
 
 typedef enum __bool {
@@ -93,7 +94,7 @@ kbledctl_bool make_daemon()
 	return TRUE;
 }
 
-void listen_events(const char* display, int nled) 
+void listen_events(const char* display, const int nled) 
 {
 	char target[PATH_MAX];
 	if(get_keyboard_evpath_s(target) != 0)
@@ -169,11 +170,14 @@ int main(int argc, char** argv)
 				break;
 			case 'h':
 				print_help_exit(argv[0]);
+				break;
+			default:
+				exit(1);
 		}
 	}
 	
 	if(daemonize) {
-		if(make_daemon() == FALSE) {
+		if(!make_daemon()) {
 			fprintf(stderr,"cannot make daemon process, aborting...\n");
 			return 1;
 		}
