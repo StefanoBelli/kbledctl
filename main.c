@@ -40,7 +40,7 @@
 #define MASK 0xFFFFE7FCL
 
 typedef struct __opt {
-	char desc[17];
+	char desc[18];
 	char name[2];
 	char fill_zero;
 } kbledctl_opt;
