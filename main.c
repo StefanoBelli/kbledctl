@@ -28,8 +28,8 @@
 	errno = 0; \
 	xtarget = (int) strtol(optarg,&end,10); \
    if(errno) { \
-   	perror("unable to get integer (strtol):"); \
-   	return 1; \
+		perror("unable to get integer (strtol):"); \
+		return 1; \
    }
 
 #define UNUSED_PARAM(xparam) \
@@ -130,8 +130,8 @@ void listen_events(const char* display, const int nled, const key ctl_key)
 
 	while(TRUE) {
 		press = wait_for_keypress(f);
-	   if(press == ctl_key) {
-	   	XGetKeyboardControl(d,&current_state);
+		if(press == ctl_key) {
+			XGetKeyboardControl(d,&current_state);
 			ctl.led_mode = !(MASK == (current_state.led_mask & MASK));
 			XChangeKeyboardControl(d,KBLedMode,&ctl);
 			XFlush(d);
