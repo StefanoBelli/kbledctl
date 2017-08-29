@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 	
 	if(daemonize) {
 		if(!make_daemon()) {
-			fprintf(stderr,"cannot make daemon process, aborting...\n");
+			fputs("cannot make daemon process, aborting...",stderr);
 			return 1;
 		}
 	}
