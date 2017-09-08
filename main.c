@@ -132,7 +132,7 @@ void listen_events(const char* display, const int nled, const key ctl_key)
 		press = wait_for_keypress(f);
 		if(press == ctl_key) {
 			XGetKeyboardControl(d,&current_state);
-			ctl.led_mode = !(MASK == (current_state.led_mask & MASK));
+			ctl.led_mode = !(MASK == current_state.led_mask);
 			XChangeKeyboardControl(d,KBLedMode,&ctl);
 			XFlush(d);
 		}
